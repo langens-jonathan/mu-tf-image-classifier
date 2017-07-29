@@ -53,7 +53,7 @@ def classify(image_path):
 
       json_string = "{\"label\": \"" + str(label) + "\", \"classifierTreshhold\":\"" + str(os.environ['CLASSIFIER_TRESHHOLD']) + "\", \"results\": ["
 
-      isFirst = true
+      isFirst = True
 
       for node_id in top_k:
         human_string = label_lines[node_id]
@@ -61,7 +61,7 @@ def classify(image_path):
         if not isFirst:
           json_string += ", "
         else:
-          isFirst = false
+          isFirst = False
         json_string += "{\"label\":\"" + str(human_string) + "\", \"score\":\"" + str(score) + "\"}"
 
       json_string += "]}"
