@@ -83,6 +83,24 @@ def get_filename_for_uuid(uuid):
 
     return file_name
 
+def get_original_filename_for_uuid(uuid):
+    query = "SELECT ?file_name FROM <http://mu.semte.ch/application> WHERE { ?file <http://mu.semte.ch/vocabularies/core//uuid> \"" + uuid + "\" . ?file <http://mu.semte.ch/vocabularies/file-service/originalFilename> ?file_name . }"
+    resp, content = httplib2.Http().request("http://db:8890/sparql?query=" + urllib.quote_plus(query) + "&format=application%2Fsparql-results%2Bjson")
+
+    json_result = json.loads(content)
+
+    result_bindings = json_result['results']['bindings']
+
+    if(len(result_bindings) < 1):
+      return "FILE NOT FOUND"
+
+    file_name = result_bindings[0]['file_name']['value']
+
+    return file_name
+
+def get_extension_for_filename(filename):
+  return filename.split('.')[-1]
+
 def get_classname_for_uuid(uuid):
     query = "SELECT DISTINCT ?title FROM <http://mu.semte.ch/application> WHERE { ?s a <http://mu.semte.ch/vocabularies/ext/Class> . ?s <http://mu.semte.ch/vocabularies/core/uuid> \"" + uuid + "\" . ?s <http://purl.org/dc/terms/title> ?title . ?s ?p ?o . }"
     resp, content = httplib2.Http().request("http://db:8890/sparql?query=" + urllib.quote_plus(query) + "&format=application%2Fsparql-results%2Bjson")
@@ -131,7 +149,7 @@ def add_training_example(class_uuid, file_uuid):
   call(["mkdir",  "-p",  "/images/" + classname])
 
   # moving the file
-  file_location = "/images/" + classname + "/" + file_uuid
+  file_location = "/images/" + classname + "/" + file_uuid + "." + get_extension_for_filename(get_original_filename_for_uuid(file_uuid))
   call(["mv", filename, file_location])
 
   # update the location in the db
